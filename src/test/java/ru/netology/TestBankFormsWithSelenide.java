@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
@@ -15,12 +17,12 @@ import static com.codeborne.selenide.Selenide.*;
 public class TestBankFormsWithSelenide {
 
     @BeforeEach
-    void Setup() {
+    void setup() {
         open("http://localhost:9999/");
     }
 
     @Test
-    void OrderBookingForm() {
+    void orderBookingForm() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -29,11 +31,12 @@ public class TestBankFormsWithSelenide {
         $("[data-test-id=phone] input").setValue("+79992121212");
         $(".checkbox__box").click();
         $(byText("Забронировать")).click();
-        $(Selectors.withText("Успешно!")).waitUntil(Condition.visible, 13000);
+        $("[data-test-id=notification]").waitUntil(Condition.visible, 13000)
+                .shouldHave(exactText("Успешно! Встреча успешно забронирована на " + date));
     }
 
     @Test
-    void OrderBookingFormWithoutCity() {
+    void orderBookingFormWithoutCity() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -46,7 +49,7 @@ public class TestBankFormsWithSelenide {
     }
 
     @Test
-    void OrderBookingFormWithoutDate() {
+    void orderBookingFormWithoutDate() {
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.DELETE);
         $("[data-test-id=name] input").setValue("Ильдар Габдрахманов");
@@ -57,7 +60,7 @@ public class TestBankFormsWithSelenide {
     }
 
     @Test
-    void OrderBookingFormWithoutName() {
+    void orderBookingFormWithoutName() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -70,7 +73,7 @@ public class TestBankFormsWithSelenide {
     }
 
     @Test
-    void OrderBookingFormNameOnEnglish() {
+    void orderBookingFormNameOnEnglish() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -79,11 +82,12 @@ public class TestBankFormsWithSelenide {
         $("[data-test-id=phone] input").setValue("+79992121212");
         $(".checkbox__box").click();
         $(byText("Забронировать")).click();
-        $("[data-test-id=name]").shouldHave(text("Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы."));
+        $("[data-test-id=name]").shouldHave(text("Имя и Фамилия указаные неверно." +
+                " Допустимы только русские буквы, пробелы и дефисы."));
     }
 
     @Test
-    void OrderBookingFormWithoutPhoneNumber() {
+    void orderBookingFormWithoutPhoneNumber() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -96,7 +100,7 @@ public class TestBankFormsWithSelenide {
     }
 
     @Test
-    void OrderBookingFormWithoutPhoneWithoutPlus() {
+    void orderBookingFormWithoutPhoneWithoutPlus() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -105,11 +109,12 @@ public class TestBankFormsWithSelenide {
         $("[data-test-id=phone] input").setValue("79992121212");
         $(".checkbox__box").click();
         $(byText("Забронировать")).click();
-        $("[data-test-id=phone]").shouldHave(text("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678."));
+        $("[data-test-id=phone]").shouldHave(text("Телефон указан неверно. Должно быть 11 цифр," +
+                " например, +79012345678."));
     }
 
     @Test
-    void OrderBookingFormNotClickCheckBox() {
+    void orderBookingFormNotClickCheckBox() {
         String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $(".input__inner [type=text]").setValue("Санкт-Петербург");
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -117,6 +122,7 @@ public class TestBankFormsWithSelenide {
         $("[data-test-id=name] input").setValue("Ильдар Габдрахманов");
         $("[data-test-id=phone] input").setValue("+79992121212");
         $(byText("Забронировать")).click();
-        $(".checkbox__text").shouldHave(text("Я соглашаюсь с условиями обработки и использования моих персональных данных"));
+        $(".input_invalid").shouldHave(text("Я соглашаюсь с условиями обработки и использования моих" +
+                " персональных данных"));
     }
 }
